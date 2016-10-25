@@ -44,7 +44,7 @@ class SolverWrap final
 	FuncSolve funcSolve;
 
 public:
-	explicit SolverWrap(char *pathSolver);
+	explicit SolverWrap(const char *pathSolver);
 
 	~SolverWrap();
 

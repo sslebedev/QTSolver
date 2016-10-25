@@ -22,7 +22,7 @@
  * @return
  * @throws
  */
-SolverWrap::SolverWrap(char *pathSolver)
+SolverWrap::SolverWrap(const char *pathSolver)
 {
 #if defined(__linux__)
 	char *concretePath = new char[strlen(pathSolver) + 4];
