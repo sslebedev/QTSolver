@@ -1,18 +1,54 @@
 #include <gtest/gtest.h>
+#include <fstream>
 
 #include "solver_wrap.h"
 
-TEST(SolverMain, InitDeinit)
-{
-	SolverWrap *wrap;
-	ASSERT_NO_THROW(wrap = new SolverWrap("libSolver"));
-	ASSERT_NO_THROW(delete(wrap));
-}
-
 class FixSolver : public ::testing::Test
 {
+protected:
+	SolverWrap *wrap;
+	std::istream *istream;
 
+public:
+	FixSolver()
+	{
+		istream = new std::ifstream();
+	}
+
+	virtual ~FixSolver()
+	{
+		delete (istream);
+	}
+
+protected:
+
+	void SetUp()
+	{
+		ASSERT_NO_THROW(wrap = new SolverWrap("libSolver"));
+	}
+
+	void TearDown()
+	{
+		ASSERT_NO_THROW(delete (wrap));
+	}
 };
+
+TEST_F(FixSolver, AllFunctionsPresented)
+{
+	EXPECT_STREQ("54f61d5b-cb47-48e6-b80e-459eb2ed04b5", wrap->GetUid());
+	EXPECT_STREQ("System of Linear Equations", wrap->GetClassName());
+	EXPECT_STREQ("Jacobi", wrap->GetMethodName());
+	EXPECT_STREQ("Jacobi method is an algorithm "
+						 "for determining the solutions "
+						 "of a diagonally dominant system of linear equations.", wrap->GetDescription());
+
+
+	EXPECT_EQ(nullptr, wrap->GetResolvedForm(*istream));
+
+	EXPECT_STREQ("Dummy", wrap->PresentResult(nullptr));
+
+	EXPECT_EQ(nullptr, wrap->Solve(*istream));
+}
 
 int main(int argc, char *argv[])
 {

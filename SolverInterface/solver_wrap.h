@@ -60,7 +60,7 @@ public:
 
 	const char *PresentResult(double args[]) const;
 
-	const Result *Solve(const std::istream &input);
+	const Result *Solve(const std::istream &input) const;
 };
 
 

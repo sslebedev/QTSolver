@@ -31,7 +31,7 @@ SolverWrap::SolverWrap(const char *pathSolver)
 	dlHandle = dlopen(concretePath, RTLD_LAZY);
 	delete[](concretePath);
 #else
-#error PLATFORM IS NOT SUPPORTED
+	#error PLATFORM IS NOT SUPPORTED
 #endif
 
 	if (!dlHandle) {
@@ -39,19 +39,19 @@ SolverWrap::SolverWrap(const char *pathSolver)
 	}
 
 	funcGetUid = reinterpret_cast<FuncGetStr>(GetFunction("GetUid"));
-	//assert(funcGetUid);
+	assert(funcGetUid);
 	funcGetClassName = reinterpret_cast<FuncGetStr>(GetFunction("GetClassName"));
-	//assert(funcGetClassName);
+	assert(funcGetClassName);
 	funcGetMethodName = reinterpret_cast<FuncGetStr>(GetFunction("GetMethodName"));
-	//assert(funcGetMethodName);
+	assert(funcGetMethodName);
 	funcGetDescription = reinterpret_cast<FuncGetStr>(GetFunction("GetDescription"));
-	//assert(funcGetDescription);
+	assert(funcGetDescription);
 	funcGetResolvedForm = reinterpret_cast<FuncGetStr>(GetFunction("GetResolvedForm"));
-	//assert(funcGetResolvedForm);
+	assert(funcGetResolvedForm);
 	funcPresentResult = reinterpret_cast<FuncPresent>(GetFunction("PresentResult"));
-	//assert(funcPresentResult);
+	assert(funcPresentResult);
 	funcSolve = reinterpret_cast<FuncSolve>(GetFunction("Solve"));
-	//assert(funcSolve);
+	assert(funcSolve);
 }
 
 /**
@@ -66,7 +66,7 @@ SolverWrap::~SolverWrap()
 #if defined(__linux__)
 	dlclose(dlHandle);
 #else
-#error PLATFORM IS NOT SUPPORTED
+	#error PLATFORM IS NOT SUPPORTED
 #endif
 
 }
@@ -150,7 +150,7 @@ const char *SolverWrap::PresentResult(double results[]) const
  * @param input
  * @return Result
  */
-const Result *SolverWrap::Solve(const std::istream &input)
+const Result *SolverWrap::Solve(const std::istream &input) const
 {
 	return funcSolve(input);
 }
