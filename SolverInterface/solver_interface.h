@@ -61,7 +61,8 @@ extern "C" DLL_PUBLIC const char *GetMethodName();
 extern "C" DLL_PUBLIC const char *GetDescription();
 
 /**
- * Unifyed representation for given (parced and recognized) task
+ * Unifyed representation for given (parced and recognized) task.
+ * The same task even writen in defferent form shold have the same resolved form.
  * This can be not supported or partially supported for module
  * @param input
  * @return nullptr if cannot be resolved OR form

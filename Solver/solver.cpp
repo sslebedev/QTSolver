@@ -39,12 +39,13 @@ const char *GetDescription()
 
 const char *GetResolvedForm(const std::istream &input)
 {
+	// not supported for this class by my will
 	return nullptr;
 }
 
 const char *PresentResult(double args[])
 {
-	return "Dummy";
+	return "I'm a correct vector-column";
 }
 
 const Result *Solve(const std::istream &input)

@@ -45,7 +45,7 @@ TEST_F(FixSolver, AllFunctionsPresented)
 
 	EXPECT_EQ(nullptr, wrap->GetResolvedForm(*istream));
 
-	EXPECT_STREQ("Dummy", wrap->PresentResult(nullptr));
+	EXPECT_STREQ("I'm a correct vector-column", wrap->PresentResult(nullptr));
 
 	EXPECT_EQ(nullptr, wrap->Solve(*istream));
 }
