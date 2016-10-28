@@ -6,6 +6,7 @@
 #define QTSOLVER_SOLVER_WRAP_H
 
 #include <iosfwd>
+#include <vector>
 
 class Result;
 
@@ -31,7 +32,7 @@ class SolverWrap final
 	// Functor types for shorter casting
 	typedef const char *(*FuncGetStr)();
 
-	typedef const char *(*FuncPresent)(double []);
+	typedef const char *(*FuncPresent)(const std::vector<double> &results);
 
 	typedef Result *(*FuncSolve)(const std::istream &);
 
@@ -58,7 +59,7 @@ public:
 
 	const char *GetResolvedForm(const std::istream &input) const;
 
-	const char *PresentResult(double args[]) const;
+	const char *PresentResult(const std::vector<double> &results) const;
 
 	const Result *Solve(const std::istream &input) const;
 };

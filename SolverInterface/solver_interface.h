@@ -74,7 +74,7 @@ extern "C" DLL_PUBLIC const char *GetResolvedForm(const std::istream &input);
  * @param results
  * @return text
  */
-extern "C" DLL_PUBLIC const char *PresentResult(double args[]);
+extern "C" DLL_PUBLIC const char *PresentResult(const std::vector<double> &results);
 
 /**
  * Solve given task

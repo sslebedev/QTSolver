@@ -45,7 +45,7 @@ TEST_F(FixSolver, AllFunctionsPresented)
 
 	EXPECT_EQ(nullptr, wrap->GetResolvedForm(*istream));
 
-	EXPECT_STREQ("I'm a correct vector-column", wrap->PresentResult(nullptr));
+	EXPECT_STREQ("[1; 2; 3; 4.0001]", wrap->PresentResult({1, 2, 3.0, 4.0001}));
 
 	EXPECT_EQ(nullptr, wrap->Solve(*istream));
 }

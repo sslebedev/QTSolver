@@ -9,6 +9,7 @@
 #include <dlfcn.h>
 #include <assert.h>
 #include <cstring>
+	#include <vector>
 
 #else
 #error PLATFORM IS NOT SUPPORTED
@@ -140,7 +141,7 @@ const char *SolverWrap::GetResolvedForm(const std::istream &input) const
  * @param results
  * @return text
  */
-const char *SolverWrap::PresentResult(double results[]) const
+const char *SolverWrap::PresentResult(const std::vector<double> &results) const
 {
 	return funcPresentResult(results);
 }
