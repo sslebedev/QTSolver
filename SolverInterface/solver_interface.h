@@ -30,9 +30,62 @@
 	#endif
 #endif
 
+#include <cassert>
+#include <string>
+#include <stdexcept>
+
 class Result
 {
+public:
+	Result(std::string &&methodUid, std::string &&errorExplanation)
+			: methodUid(methodUid.c_str())
+			  , errorExplanation(errorExplanation)
+	{
+		assert(errorExplanation != "");
+	}
 
+	Result(std::string &&methodUid, double eps, const std::vector<double> &&result)
+			: methodUid(methodUid.c_str())
+			  , errorExplanation("")
+			  , result(result)
+			  , eps(eps)
+	{}
+
+	bool IsOk() const
+	{
+		return errorExplanation.size() == 0;
+	}
+
+	const std::vector<double> &GetResult() const
+	{
+		if (!IsOk()) {
+			throw std::logic_error("Bad Result");
+		}
+		return result;
+	}
+
+	double GetEps() const
+	{
+		if (!IsOk()) {
+			throw std::logic_error("Bad Result");
+		}
+		return eps;
+	}
+
+	const char *GetMethodUid() const
+	{
+		return methodUid;
+	}
+
+	const std::string &GetErrorExplanation() const
+	{
+		return errorExplanation;
+	}
+private:
+	const std::vector<double> result;
+	double eps;
+	const char *methodUid;
+	std::string errorExplanation;
 };
 
 /**
@@ -67,7 +120,7 @@ extern "C" DLL_PUBLIC const char *GetDescription();
  * @param input
  * @return nullptr if cannot be resolved OR form
  */
-extern "C" DLL_PUBLIC const char *GetResolvedForm(const std::istream &input);
+extern "C" DLL_PUBLIC const char *GetResolvedForm(std::istream &input);
 
 /**
  * Text representation for result
@@ -81,6 +134,6 @@ extern "C" DLL_PUBLIC const char *PresentResult(const std::vector<double> &resul
  * @param input
  * @return Result
  */
-extern "C" DLL_PUBLIC const Result *Solve(const std::istream &input);
+extern "C" DLL_PUBLIC const Result Solve(std::istream &input);
 
 #endif //QTSOLVER_SOLVER_INTERFACE_H

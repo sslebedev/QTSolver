@@ -41,9 +41,9 @@ const char *GetDescription()
 	return Description;
 }
 
-const char *GetResolvedForm(const std::istream &input)
+const char *GetResolvedForm(std::istream &input)
 {
-	// not supported for this class by my will
+	// not supported for this class by design
 	return nullptr;
 }
 
@@ -51,7 +51,7 @@ const char *PresentResult(const std::vector<double> &args)
 {
 	std::ostringstream pres;
 	pres << "[";
-	for (int i = 0, n = args.size(); i < n; ++i) {
+	for (int i = 0, n = (int)args.size(); i < n; ++i) {
 		pres << args[i];
 		if (i < n - 1) {
 			pres << "; ";
@@ -61,33 +61,130 @@ const char *PresentResult(const std::vector<double> &args)
 	return pres.str().c_str();
 }
 
-const Result *Solve(const std::istream &input)
-{
-	return nullptr;
-}
+const Result Jacobi(const std::vector<double> &a, const std::vector<double> &b, double eps);
 
-static void Jacobi(int N, double **A, double *B, double *X, double eps)
+const Result Solve(std::istream &input)
 {
-	double *TempX = new double[N];
-	double norm;
+	char separator;
+	double value;
+	int n = -1;
+	int row = 0;
+
+	double eps;
+
+	input >> eps;
+
+	std::vector<double> a;
+
+	input >> separator;
+	if (separator != '[') {
+		return Result(GetUid(), "Matrix A expected");
+	}
 
 	do {
-		for (int i = 0; i < N; i++) {
-			TempX[i] = B[i];
-			for (int g = 0; g < N; g++) {
-				if (i != g) {
-					TempX[i] -= A[i][g] * X[g];
+		input >> value >> separator;
+		a.push_back(value);
+		if (separator == ',') {
+			continue;
+		}
+		if (separator == ';' || separator == ']') {
+			if (n == -1) {
+				n = a.size();
+			}
+			if (a.size() != n * (row + 1)) {
+				std::stringstream stream;
+				stream << "Wrong matrix A input, row " << row
+					   << ": expected " << n << " elements, "
+					   << "have " << a.size() - n * row;
+				return Result(GetUid(), stream.str());
+			}
+			++row;
+			continue;
+		}
+		std::stringstream stream;
+		stream << "Wrong matrix A input, row " << row
+			   << ": wrong separator";
+		return Result(GetUid(), stream.str());
+	} while (separator != ']');
+
+	if (row != n) {
+		std::stringstream stream;
+		stream << "Wrong matrix A metrics, rowsXcolumns: "
+			   << row << "X" << n
+			   << ", rows = columns expected";
+		return Result(GetUid(), stream.str());
+	}
+
+	std::vector<double> b;
+
+	input >> separator;
+	if (separator != '[') {
+		return Result(GetUid(), "Vector B expected");
+	}
+
+	do {
+		input >> value >> separator;
+		b.push_back(value);
+		if (separator == ',') {
+			std::stringstream stream;
+			stream << "Wrong vector B input, row " << row
+				   << ": many values in row, column vector expected";
+			return Result(GetUid(), stream.str());
+		}
+		if (separator == ';' || separator == ']') {
+			continue;
+		}
+		std::stringstream stream;
+		stream << "Wrong vector B input, row " << row
+			   << ": wrong separator";
+		return Result(GetUid(), stream.str());
+	} while (separator != ']');
+
+	if (b.size() != n) {
+		std::stringstream stream;
+		stream << "Wrong vector B metrics, rows: "
+			   << b.size() << ", but " << n << " expected";
+		return Result(GetUid(), stream.str());
+	}
+
+	return Jacobi(a, b, eps);
+}
+
+const Result Jacobi(const std::vector<double> &a, const std::vector<double> &b, double eps)
+{
+	auto n = (int)b.size();
+	auto x = b;
+	auto tx = std::vector<double>(n);
+
+	auto q = fabs(b[0]);
+	for (int i = 1; i < n; i++) {
+		if (fabs(b[i]) > q) {
+			q = fabs(b[i]);
+		}
+	}
+	if (q > 1) {
+		return Result(GetUid(), "|B[i]| <= 1 expected");
+	}
+
+	double norm;
+	do {
+		for (int i = 0; i < n; i++) {
+			tx[i] = b[i];
+			for (int j = 0; j < n; j++) {
+				if (i != j) {
+					tx[i] -= a[i * n + j] * x[j];
 				}
 			}
-			TempX[i] /= A[i][i];
+			tx[i] /= a[i * n + i];
 		}
-		norm = fabs(X[0] - TempX[0]);
-		for (int h = 0; h < N; h++) {
-			if (fabs(X[h] - TempX[h]) > norm) {
-				norm = fabs(X[h] - TempX[h]);
+		norm = fabs(x[0] - tx[0]);
+		for (int i = 0; i < n; i++) {
+			if (fabs(x[i] - tx[i]) > norm) {
+				norm = fabs(x[i] - tx[i]);
 			}
-			X[h] = TempX[h];
+			x[i] = tx[i];
 		}
 	} while (norm > eps);
-	delete[] TempX;
+
+	return Result(GetUid(), eps, std::move(x));
 }

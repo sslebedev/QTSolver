@@ -32,15 +32,17 @@ class SolverWrap final
 	// Functor types for shorter casting
 	typedef const char *(*FuncGetStr)();
 
+	typedef const char *(*FuncResolve)(std::istream &);
+
 	typedef const char *(*FuncPresent)(const std::vector<double> &results);
 
-	typedef Result *(*FuncSolve)(const std::istream &);
+	typedef const Result (*FuncSolve)(std::istream &);
 
 	FuncGetStr funcGetUid;
 	FuncGetStr funcGetClassName;
 	FuncGetStr funcGetMethodName;
 	FuncGetStr funcGetDescription;
-	FuncGetStr funcGetResolvedForm;
+	FuncResolve funcGetResolvedForm;
 	FuncPresent funcPresentResult;
 	FuncSolve funcSolve;
 
@@ -57,11 +59,11 @@ public:
 
 	const char *GetDescription() const;
 
-	const char *GetResolvedForm(const std::istream &input) const;
+	const char *GetResolvedForm(std::istream &input) const;
 
 	const char *PresentResult(const std::vector<double> &results) const;
 
-	const Result *Solve(const std::istream &input) const;
+	const Result Solve(std::istream &input) const;
 };
 
 

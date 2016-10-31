@@ -3,19 +3,21 @@
 //
 
 #include <exception>
+#include <vector>
+#include <assert.h>
+#include <cstring>
 
 #if defined(__linux__)
 
 #include <dlfcn.h>
-#include <assert.h>
-#include <cstring>
-	#include <vector>
+	#include <stdexcept>
 
 #else
 #error PLATFORM IS NOT SUPPORTED
 #endif
 
 #include "solver_wrap.h"
+#include "solver_interface.h"
 
 /**
  * ctor - only initializer for SolverWrap
@@ -36,7 +38,7 @@ SolverWrap::SolverWrap(const char *pathSolver)
 #endif
 
 	if (!dlHandle) {
-		throw new std::exception(); // todo
+		throw new std::runtime_error(concretePath);
 	}
 
 	funcGetUid = reinterpret_cast<FuncGetStr>(GetFunction("GetUid"));
@@ -47,7 +49,7 @@ SolverWrap::SolverWrap(const char *pathSolver)
 	assert(funcGetMethodName);
 	funcGetDescription = reinterpret_cast<FuncGetStr>(GetFunction("GetDescription"));
 	assert(funcGetDescription);
-	funcGetResolvedForm = reinterpret_cast<FuncGetStr>(GetFunction("GetResolvedForm"));
+	funcGetResolvedForm = reinterpret_cast<FuncResolve>(GetFunction("GetResolvedForm"));
 	assert(funcGetResolvedForm);
 	funcPresentResult = reinterpret_cast<FuncPresent>(GetFunction("PresentResult"));
 	assert(funcPresentResult);
@@ -131,9 +133,9 @@ const char *SolverWrap::GetDescription() const
  * @param input
  * @return nullptr if cannot be resolved OR form
  */
-const char *SolverWrap::GetResolvedForm(const std::istream &input) const
+const char *SolverWrap::GetResolvedForm(std::istream &input) const
 {
-	return funcGetResolvedForm();
+	return funcGetResolvedForm(input);
 }
 
 /**
@@ -151,7 +153,7 @@ const char *SolverWrap::PresentResult(const std::vector<double> &results) const
  * @param input
  * @return Result
  */
-const Result *SolverWrap::Solve(const std::istream &input) const
+const Result SolverWrap::Solve(std::istream &input) const
 {
 	return funcSolve(input);
 }
