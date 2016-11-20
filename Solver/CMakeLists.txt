@@ -5,7 +5,7 @@ set(PROJECT_NAME Solver)
 project(${PROJECT_NAME})
 message(WARNING "Project: ${PROJECT_NAME}")
 
-add_compile_options(-std=c++11)
+add_compile_options(-std=gnu++11)
 add_compile_options(-fvisibility=hidden)
 
 add_definitions(-DBUILDING_DLL)

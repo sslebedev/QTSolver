@@ -19,11 +19,7 @@ class SolverWrap final
 
 	SolverWrap &operator=(SolverWrap const &) = delete;
 
-#if defined(__linux__)
 	typedef void *DlHandle;
-#else
-#error PLATFORM IS NOT SUPPORTED
-#endif
 
 	DlHandle dlHandle;
 

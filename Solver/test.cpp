@@ -39,6 +39,7 @@ protected:
 	}
 };
 
+// linPack - tests
 TEST_F(FixSolver, AllFunctionsPresented)
 {
 	EXPECT_STREQ("54f61d5b-cb47-48e6-b80e-459eb2ed04b5", wrap->GetUid());

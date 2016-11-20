@@ -5,7 +5,6 @@
       <sourceFolder url="file://$MODULE_DIR$/SolverInterface/solver_wrap.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/SolverInterface/solver_wrap.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/SolverInterface/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/Solver/solver.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Solver/test.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Solver/solver.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Solver/CMakeLists.txt" isTestSource="false" />

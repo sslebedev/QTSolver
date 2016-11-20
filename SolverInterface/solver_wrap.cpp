@@ -2,19 +2,11 @@
 // Created by sslebedev on 23.10.16.
 //
 
-#include <exception>
 #include <vector>
-#include <assert.h>
 #include <cstring>
-
-#if defined(__linux__)
+#include <stdexcept>
 
 #include <dlfcn.h>
-	#include <stdexcept>
-
-#else
-#error PLATFORM IS NOT SUPPORTED
-#endif
 
 #include "solver_wrap.h"
 #include "solver_interface.h"
@@ -27,15 +19,11 @@
  */
 SolverWrap::SolverWrap(const char *pathSolver)
 {
-#if defined(__linux__)
 	char *concretePath = new char[strlen(pathSolver) + 4];
 	strcpy(concretePath, pathSolver);
 	strcat(concretePath, ".so");
 	dlHandle = dlopen(concretePath, RTLD_LAZY);
 	delete[](concretePath);
-#else
-	#error PLATFORM IS NOT SUPPORTED
-#endif
 
 	if (!dlHandle) {
 		throw new std::runtime_error(concretePath);
@@ -66,12 +54,7 @@ SolverWrap::~SolverWrap()
 		return;
 	}
 
-#if defined(__linux__)
 	dlclose(dlHandle);
-#else
-	#error PLATFORM IS NOT SUPPORTED
-#endif
-
 }
 
 /**
@@ -81,11 +64,7 @@ SolverWrap::~SolverWrap()
  */
 inline void *SolverWrap::GetFunction(const char *nameFunction) const
 {
-#if defined(__linux__)
 	auto function = dlsym(dlHandle, nameFunction);
-#else
-#error PLATFORM IS NOT SUPPORTED
-#endif
 
 	return function;
 }
