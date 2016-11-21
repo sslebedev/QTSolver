@@ -51,7 +51,7 @@ const char *PresentResult(const std::vector<double> &args)
 {
 	std::ostringstream pres;
 	pres << "[";
-	for (int i = 0, n = (int)args.size(); i < n; ++i) {
+	for (int i = 0, n = (int) args.size(); i < n; ++i) {
 		pres << args[i];
 		if (i < n - 1) {
 			pres << "; ";
@@ -61,98 +61,142 @@ const char *PresentResult(const std::vector<double> &args)
 	return pres.str().c_str();
 }
 
-const Result Jacobi(const std::vector<double> &a, const std::vector<double> &b, double eps);
+const Result Jacobi(const ParsedTask &parsedTask);
 
-const Result Solve(std::istream &input)
+class Task : public ParsedTask::BaseTask
+{
+public:
+	virtual ~Task() override
+	{}
+
+	std::vector<double> a;
+	std::vector<double> b;
+	double eps;
+};
+
+const ParsedTask Parse(std::istream &input)
 {
 	char separator;
 	double value;
 	int n = -1;
 	int row = 0;
 
-	double eps;
+	auto task = new Task();
 
-	input >> eps;
+	try {
+		input >> task->eps;
 
-	std::vector<double> a;
-
-	input >> separator;
-	if (separator != '[') {
-		return Result(GetUid(), "Matrix A expected");
-	}
-
-	do {
-		input >> value >> separator;
-		a.push_back(value);
-		if (separator == ',') {
-			continue;
+		input >> separator;
+		if (separator != '[') {
+			throw std::string("Matrix A expected");
 		}
-		if (separator == ';' || separator == ']') {
-			if (n == -1) {
-				n = a.size();
+
+		do {
+			input >> value >> separator;
+			task->a.push_back(value);
+			if (separator == ',') {
+				continue;
 			}
-			if (a.size() != n * (row + 1)) {
+			if (separator == ';' || separator == ']') {
+				if (n == -1) {
+					n = task->a.size();
+				}
+				if (task->a.size() != n * (row + 1)) {
+					std::stringstream stream;
+					stream << "Wrong matrix A input, row " << row
+						   << ": expected " << n << " elements, "
+						   << "have " << task->a.size() - n * row;
+					throw stream.str();
+				}
+				++row;
+				continue;
+			}
+			std::stringstream stream;
+			stream << "Wrong matrix A input, row " << row
+				   << ": wrong separator";
+			throw stream.str();
+		} while (separator != ']');
+
+		if (row != n) {
+			std::stringstream stream;
+			stream << "Wrong matrix A metrics, rowsXcolumns: "
+				   << row << "X" << n
+				   << ", rows = columns expected";
+			throw stream.str();
+		}
+
+		input >> separator;
+		if (separator != '[') {
+			throw std::string("Vector B expected");
+		}
+
+		do {
+			input >> value >> separator;
+			task->b.push_back(value);
+			if (separator == ',') {
 				std::stringstream stream;
-				stream << "Wrong matrix A input, row " << row
-					   << ": expected " << n << " elements, "
-					   << "have " << a.size() - n * row;
-				return Result(GetUid(), stream.str());
+				stream << "Wrong vector B input, row " << row
+					   << ": many values in row, column vector expected";
+				throw stream.str();
 			}
-			++row;
-			continue;
-		}
-		std::stringstream stream;
-		stream << "Wrong matrix A input, row " << row
-			   << ": wrong separator";
-		return Result(GetUid(), stream.str());
-	} while (separator != ']');
-
-	if (row != n) {
-		std::stringstream stream;
-		stream << "Wrong matrix A metrics, rowsXcolumns: "
-			   << row << "X" << n
-			   << ", rows = columns expected";
-		return Result(GetUid(), stream.str());
-	}
-
-	std::vector<double> b;
-
-	input >> separator;
-	if (separator != '[') {
-		return Result(GetUid(), "Vector B expected");
-	}
-
-	do {
-		input >> value >> separator;
-		b.push_back(value);
-		if (separator == ',') {
+			if (separator == ';' || separator == ']') {
+				continue;
+			}
 			std::stringstream stream;
 			stream << "Wrong vector B input, row " << row
-				   << ": many values in row, column vector expected";
-			return Result(GetUid(), stream.str());
-		}
-		if (separator == ';' || separator == ']') {
-			continue;
-		}
-		std::stringstream stream;
-		stream << "Wrong vector B input, row " << row
-			   << ": wrong separator";
-		return Result(GetUid(), stream.str());
-	} while (separator != ']');
+				   << ": wrong separator";
+			throw stream.str();
+		} while (separator != ']');
 
-	if (b.size() != n) {
+		if (task->b.size() != n) {
+			std::stringstream stream;
+			stream << "Wrong vector B metrics, rows: "
+				   << task->b.size() << ", but " << n << " expected";
+			throw stream.str();
+
+		}
+		return ParsedTask(GetUid(), task);
+	} catch (std::string what) {
+		delete (task);
+		ParsedTask(GetUid(), what);
+	}
+}
+
+const Result SolveParsedTask(const ParsedTask &parsedTask)
+{
+	if (!parsedTask.IsOk()) {
 		std::stringstream stream;
-		stream << "Wrong vector B metrics, rows: "
-			   << b.size() << ", but " << n << " expected";
+		stream << "Parsed task is invalid: "
+			   << parsedTask.GetErrorExplanation();
 		return Result(GetUid(), stream.str());
 	}
 
-	return Jacobi(a, b, eps);
+	if (parsedTask.GetMethodUid() != GetUid()) {
+		std::stringstream stream;
+		stream << "Method uid of solver ("
+			   << GetUid() << ", " << GetClassName() << ", " << GetMethodName() << ") "
+			   << "and uid of parsedTask ("
+			   << GetUid() << ", " << GetClassName() << ", " << GetMethodName() << ") "
+			   << "are incompatible";
+		return Result(GetUid(), stream.str());
+	}
+
+	return Jacobi(parsedTask);
 }
 
-const Result Jacobi(const std::vector<double> &a, const std::vector<double> &b, double eps)
+const Result Solve(std::istream &input)
 {
-	auto n = (int)b.size();
+	auto parsedTask = Parse(input);
+
+	return SolveParsedTask(parsedTask);
+}
+
+const Result Jacobi(const ParsedTask &parsedTask)
+{
+	auto a = static_cast<Task *>(parsedTask.GetTask())->a;
+	auto b = static_cast<Task *>(parsedTask.GetTask())->b;
+	auto eps = static_cast<Task *>(parsedTask.GetTask())->eps;
+	auto n = (int) b.size();
 	auto x = b;
 	auto tx = std::vector<double>(n);
 

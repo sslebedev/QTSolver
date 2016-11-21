@@ -37,14 +37,14 @@
 class Result
 {
 public:
-	Result(std::string &&methodUid, std::string &&errorExplanation)
+	Result(const std::string &methodUid, const std::string &errorExplanation)
 			: methodUid(methodUid.c_str())
 			  , errorExplanation(errorExplanation)
 	{
 		assert(errorExplanation != "");
 	}
 
-	Result(std::string &&methodUid, double eps, const std::vector<double> &&result)
+	Result(const std::string &methodUid, double eps, const std::vector<double> &result)
 			: methodUid(methodUid.c_str())
 			  , errorExplanation("")
 			  , result(result)
@@ -81,10 +81,65 @@ public:
 	{
 		return errorExplanation;
 	}
+
 private:
 	const std::vector<double> result;
 	double eps;
 	const char *methodUid;
+	const std::string errorExplanation;
+};
+
+class ParsedTask
+{
+public:
+	class BaseTask
+	{
+	public:
+		virtual ~BaseTask() {};
+	};
+
+	ParsedTask(const char *methodUid, BaseTask *task)
+			: methodUid(methodUid)
+			  , task(task)
+			  , errorExplanation("")
+	{}
+
+	ParsedTask(const char *methodUid, const std::string &errorExplanation)
+			: methodUid(methodUid)
+			  , task(nullptr)
+			  , errorExplanation(errorExplanation)
+	{}
+
+	~ParsedTask()
+	{
+		if (task != nullptr) {
+			delete (task);
+		}
+	}
+
+	BaseTask *GetTask() const
+	{
+		return task;
+	}
+
+	const char *GetMethodUid() const
+	{
+		return methodUid;
+	}
+
+	bool IsOk() const
+	{
+		return errorExplanation.size() == 0;
+	}
+
+	const std::string &GetErrorExplanation() const
+	{
+		return errorExplanation;
+	}
+
+private:
+	const char *methodUid;
+	BaseTask *task;
 	std::string errorExplanation;
 };
 
@@ -130,7 +185,21 @@ extern "C" DLL_PUBLIC const char *GetResolvedForm(std::istream &input);
 extern "C" DLL_PUBLIC const char *PresentResult(const std::vector<double> &results);
 
 /**
- * Solve given task
+ * Parse input as task
+ * @param input
+ * @return ParsedTask
+ */
+extern "C" DLL_PUBLIC const ParsedTask Parse(std::istream &input);
+
+/**
+ * Solve given parsed task
+ * @param parsedTask
+ * @return Result
+ */
+extern "C" DLL_PUBLIC const Result SolveParsedTask(const ParsedTask &parsedTask);
+
+/**
+ * Parse input and solve task
  * @param input
  * @return Result
  */
